@@ -1,0 +1,25 @@
+{
+  "name": "materugen",
+  "version": "1.0.0",
+  "description": "Generate Material You colorscheme from Image using @material/material-color-utilties and output it to JSON",
+  "main": "dist/index.js",
+  "bin": "dist/index.js",
+  "repository": "https://github.com/Woomymy/materugen",
+  "author": "Woomymy",
+  "license": "MIT",
+  "private": false,
+  "type": "module",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^20.0.0",
+    "@types/node": "^18.7.3",
+    "typescript": "^4.7.4"
+  },
+  "dependencies": {
+    "@material/material-color-utilities": "^0.2.0",
+    "@napi-rs/canvas": "^0.1.27",
+    "jsdom": "https://github.com/Woomymy/jsdom.git"
+  }
+}
