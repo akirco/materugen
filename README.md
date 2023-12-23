@@ -1,9 +1,8 @@
 # Materugen
 
-`materugen` is a cli tool that makes use of `@material/material-color-utilities` to generate material you dynamic color schemes from an Image and output them to JSON
+Makes use of [Material You Palette (Rust)](https://github.com/dainbrump/material_you_palette) to generate a material you scheme from an image in CLI and output it to a JSON file
 
 ## Usage
 
-`yarn global add materugen` or `npm install --global materugen`
 `materugen <image path> <output json> (light|dark (default: dark))`
 
