@@ -7,3 +7,7 @@ edition = "2021"
 color-thief = "0.2.2"
 image = "0.24.7"
 material_you_palette = { git = "https://github.com/dainbrump/material_you_palette.git" }
+
+[profile.release]
+strip = true
+
