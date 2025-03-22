@@ -1,12 +1,13 @@
 [package]
 name = "materugen"
-version = "1.0.0"
+version = "0.1.0"
 edition = "2021"
 description = "Generate Material You color palettes from images or hex codes or random colors"
 license = "MIT"
 authors = ["akirco <aki.me.morin@gmail.com>"]
-repository = ""
-homepage = ""
+repository = "git+https://github.com/akirco/materugen.git"
+homepage = "https://www.npmjs.com/package/materugen"
+keywords = ["material-you", "palette", "color", "generator", "cli", "wasm", "web", "server", "actix", "actix-web", "actix-files"]
 default-run = "cli"
 
 [lib]
