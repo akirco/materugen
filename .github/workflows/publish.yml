@@ -20,7 +20,12 @@ jobs:
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
       - name: Build npm package
-        run: wasm-pack build --target bundler --features wasm --no-default-features
+        run: |
+          wasm-pack build --target bundler --scope akirco --features wasm --no-default-features
+          cd pkg
+          # 更新 package.json
+          npm version ${{ github.ref_name }} --no-git-tag-version || true
+          npm pkg set name="@akirco/materugen"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -32,6 +37,7 @@ jobs:
       - name: Publish to npm
         run: |
           cd pkg
+          echo "//registry.npmjs.org/:_authToken=\${NODE_AUTH_TOKEN}" > .npmrc
           npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

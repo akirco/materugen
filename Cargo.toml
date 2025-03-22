@@ -1,11 +1,11 @@
 [package]
-name = "materugen"
+name = "materugen"  # 修改回普通包名
 version = "0.1.0"
 edition = "2021"
 description = "Generate Material You color palettes from images or hex codes or random colors"
 license = "MIT"
 authors = ["akirco <aki.me.morin@gmail.com>"]
-repository = "git+https://github.com/akirco/materugen.git"
+repository = "https://github.com/akirco/materugen.git"  # 修正 repository URL
 homepage = "https://www.npmjs.com/package/materugen"
 keywords = ["material-you", "palette", "color", "generator", "cli", "wasm", "web", "server", "actix", "actix-web", "actix-files"]
 default-run = "cli"
@@ -52,4 +52,7 @@ actix-files = { version = "0.6", optional = true }
 
 [profile.release]
 strip = true
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-Os"]
 
