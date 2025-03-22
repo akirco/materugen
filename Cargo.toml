@@ -1,0 +1,54 @@
+[package]
+name = "materugen"
+version = "1.0.0"
+edition = "2021"
+description = "Generate Material You color palettes from images or hex codes or random colors"
+license = "MIT"
+authors = ["akirco <aki.me.morin@gmail.com>"]
+repository = ""
+homepage = ""
+default-run = "cli"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["cli"]
+cli = ["dep:rand"]
+wasm = [
+    "dep:wasm-bindgen",
+    "dep:web-sys",
+    "dep:js-sys",
+    "dep:console_error_panic_hook",
+    "dep:getrandom",
+    "dep:rand"
+]
+serve = ["dep:actix-web", "dep:actix-files"]
+
+[[bin]]
+name = "cli"
+path = "src/bin/cli.rs"
+required-features = ["cli"]
+
+[[bin]]
+name = "serve"
+path = "src/bin/serve.rs"
+required-features = ["serve"]
+
+[dependencies]
+color-thief = "0.2.2"
+image = "0.25.5"
+material_you_palette = { git = "https://github.com/dainbrump/material_you_palette.git" }
+thiserror = "2.0.12"
+rand = { version = "0.8.5", optional = true, features = ["getrandom"] }
+getrandom = { version = "0.2.11", optional = true, features = ["js"] }
+wasm-bindgen = { version = "0.2.87", optional = true }
+js-sys = { version = "0.3.64", optional = true }
+web-sys = { version = "0.3.64", optional = true, features = ["File", "Blob"] }
+console_error_panic_hook = { version = "0.1.7", optional = true }
+actix-web = { version = "4", optional = true }
+actix-files = { version = "0.6", optional = true }
+
+[profile.release]
+strip = true
+

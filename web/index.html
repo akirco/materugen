@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Material You Theme Generator</title>
+    <style>
+        body {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: darkcyan;
+        }
+        .color-preview {
+            width: 200px;
+            height: 40px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .controls {
+            margin: 20px 0;
+            display: grid;
+            gap: 10px;
+        }
+        .theme-preview {
+            display: grid;
+            gap: 8px;
+        }
+        .version {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+        .drop-zone {
+            border: 2px dashed #ccc;
+            border-radius: 4px;
+            padding: 20px;
+            text-align: center;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+        .drop-zone.drag-over {
+            border-color: #000;
+            background: #f0f0f0;
+        }
+        #imagePreview {
+            max-width: 200px;
+            max-height: 200px;
+            margin: 10px 0;
+            display: none;
+        }
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .color-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .color-item .color-preview {
+            width: 100%;
+        }
+        .color-item code {
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Material You Theme Generator</h1>
+
+    <div class="controls">
+        <input type="color" id="colorPicker" value="#6750A4">
+        <div class="drop-zone" id="dropZone">
+            <p>Drop image here or click to upload</p>
+            <input type="file" id="fileInput" accept="image/*" style="display: none">
+            <img id="imagePreview">
+        </div>
+        <button id="randomBtn">Generate Random</button>
+        <select id="themeVariant">
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+        </select>
+    </div>
+
+    <div class="theme-preview" id="preview"></div>
+    <pre id="output"></pre>
+    <div class="version" id="version"></div>
+
+    <script type="module">
+        // 获取当前页面的基本路径
+        const basePath = location.pathname.replace(/\/[^/]*$/, '');
+
+        // 导入 WASM 模块时使用正确的路径
+        import init, { generate_from_hex, generate_random, generate_from_image_bytes, get_build_info }
+        from `${basePath}/pkg/materugen.js`;
+
+        async function run() {
+            await init();
+
+            // Update version display with build info
+            document.getElementById('version').textContent = get_build_info();
+
+            const colorPicker = document.getElementById('colorPicker');
+            const randomBtn = document.getElementById('randomBtn');
+            const themeVariant = document.getElementById('themeVariant');
+            const preview = document.getElementById('preview');
+            const output = document.getElementById('output');
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+            const imagePreview = document.getElementById('imagePreview');
+
+            function updateTheme(json) {
+                const theme = JSON.parse(json);
+                const colorGroups = {
+                    'Primary': ['primary', 'onPrimary', 'primaryContainer', 'onPrimaryContainer'],
+                    'Secondary': ['secondary', 'onSecondary', 'secondaryContainer', 'onSecondaryContainer'],
+                    'Tertiary': ['tertiary', 'onTertiary', 'tertiaryContainer', 'onTertiaryContainer'],
+                    'Error': ['error', 'onError', 'errorContainer', 'onErrorContainer'],
+                    'Background': ['background', 'onBackground', 'surface', 'onSurface'],
+                    'Surface': ['surfaceVariant', 'onSurfaceVariant', 'inverseSurface', 'inverseOnSurface'],
+                    'Other': ['outline', 'outlineVariant', 'shadow', 'scrim', 'inversePrimary']
+                };
+
+                let html = '';
+                for (const [group, colors] of Object.entries(colorGroups)) {
+                    html += `
+                        <div class="color-section">
+                            <h3>${group}</h3>
+                            <div class="color-grid">
+                                ${colors.map(color => `
+                                    <div class="color-item">
+                                        <div class="color-preview" style="background: ${theme[color]}"></div>
+                                        <code>${color}: ${theme[color]}</code>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                preview.innerHTML = html;
+                output.textContent = JSON.stringify(theme, null, 2);
+            }
+
+            colorPicker.addEventListener('input', () => {
+                const json = generate_from_hex(colorPicker.value, themeVariant.value);
+                updateTheme(json);
+            });
+
+            randomBtn.addEventListener('click', () => {
+                const json = generate_random(themeVariant.value);
+                updateTheme(json);
+            });
+
+            themeVariant.addEventListener('change', () => {
+                const json = generate_from_hex(colorPicker.value, themeVariant.value);
+                updateTheme(json);
+            });
+
+            // Handle drag and drop
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('drag-over');
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('drag-over');
+            });
+
+            dropZone.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('drag-over');
+                const file = e.dataTransfer.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    await handleImageFile(file);
+                }
+            });
+
+            dropZone.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            fileInput.addEventListener('change', async () => {
+                const file = fileInput.files[0];
+                if (file) {
+                    await handleImageFile(file);
+                }
+            });
+
+            async function handleImageFile(file) {
+                // Preview image
+                const reader = new FileReader();
+                reader.onload = () => {
+                    imagePreview.src = reader.result;
+                    imagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+
+                // Generate theme
+                const arrayBuffer = await file.arrayBuffer();
+                const bytes = new Uint8Array(arrayBuffer);
+                const json = generate_from_image_bytes(bytes, themeVariant.value);
+                updateTheme(json);
+            }
+
+            // Initial generation
+            updateTheme(generate_from_hex(colorPicker.value, themeVariant.value));
+        }
+
+        run();
+    </script>
+</body>
+</html>
